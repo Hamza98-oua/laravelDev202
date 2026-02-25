@@ -779,8 +779,17 @@ function isProductAvailable($stock) {
 function getFeaturedProducts() {
     global $products; // <--- Très important !
     $featured = [];
-    
+
+    // S'assurer que $products est un tableau avant d'itérer (prévenir foreach() on null)
+    $products = $products ?? ($GLOBALS['products'] ?? []);
+    if (!is_array($products) || empty($products)) {
+        return [];
+    }
+
     foreach ($products as $category => $items) {
+        if (!is_array($items)) {
+            continue;
+        }
         foreach ($items as $product) {
             // Vérifie si les clés existent pour éviter d'autres erreurs
             if (isset($product['stock'], $product['rating']) && $product['stock'] > 0 && $product['rating'] >= 4.5) {
@@ -788,8 +797,31 @@ function getFeaturedProducts() {
             }
         }
     }
-    
+
     return array_slice($featured, 0, 3);
 }
+
+// Préparer un tableau central de données et renseigner aussi les $GLOBALS
+$__app_data = [
+    'config' => $config ?? [],
+    'categories' => $categories ?? [],
+    'products' => $products ?? [],
+    'pages' => $pages ?? [],
+    'cgv' => $cgv ?? [],
+    'faq' => $faq ?? [],
+    'navigation' => $navigation ?? []
+];
+
+// S'assurer que les anciens accès via $GLOBALS continuent de fonctionner
+$GLOBALS['config'] = $GLOBALS['config'] ?? $__app_data['config'];
+$GLOBALS['categories'] = $GLOBALS['categories'] ?? $__app_data['categories'];
+$GLOBALS['products'] = $GLOBALS['products'] ?? $__app_data['products'];
+$GLOBALS['pages'] = $GLOBALS['pages'] ?? $__app_data['pages'];
+$GLOBALS['cgv'] = $GLOBALS['cgv'] ?? $__app_data['cgv'];
+$GLOBALS['faq'] = $GLOBALS['faq'] ?? $__app_data['faq'];
+$GLOBALS['navigation'] = $GLOBALS['navigation'] ?? $__app_data['navigation'];
+
+// Retourner le tableau central pour un include/require propre
+return $__app_data;
 
 ?>

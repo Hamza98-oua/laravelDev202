@@ -11,13 +11,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // 1. On charge le fichier de données
-        require_once app_path('data.php');
+        // 1. On charge le fichier de données et on récupère le tableau central
+        $data = require_once app_path('data.php');
 
         // 2. On partage les variables avec TOUTES les vues Blade
-        // Cela évite l'erreur "Undefined variable" dans le header
-        View::share('navigation', $GLOBALS['navigation']);
-        View::share('config', $GLOBALS['config']);
-        View::share('categories', $GLOBALS['categories']);
+        // Utiliser le tableau retourné par data.php et fournir des fallbacks
+        View::share('navigation', $data['navigation'] ?? []);
+        View::share('config', $data['config'] ?? []);
+        View::share('categories', $data['categories'] ?? []);
     }
 }

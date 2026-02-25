@@ -13,10 +13,35 @@
     <ul>
         @foreach($navigation as $item)
             <li>
-                {{-- On utilise une condition simple pour les liens --}}
-                <a href="{{ $item['label'] == 'Accueil' ? route('home') : '#' }}">
-                    {{ $item['label'] }}
-                </a>
+                {{-- Génération d'URL : home, cgv, contact ou catégorie si possible --}}
+                @php
+                    $href = '#';
+                    if (!empty($item['url'])) {
+                        // page d'accueil
+                        if ($item['url'] === 'index.html') {
+                            $href = route('home');
+                        }
+                        // CGV
+                        elseif (strpos($item['url'], 'cgv') !== false) {
+                            $href = route('cgv');
+                        }
+                        // Contact
+                        elseif (strpos($item['url'], 'contact') !== false) {
+                            $href = route('contact');
+                        }
+                        // catégories (pages/<slug>.html) -> route('category', slug)
+                        elseif (preg_match('#pages/([a-z0-9-]+)\.html#i', $item['url'], $m)) {
+                            $slug = $m[1];
+                            $href = route('category', ['slug' => $slug]);
+                        }
+                        else {
+                            // fallback vers l'URL fournie
+                            $href = url($item['url']);
+                        }
+                    }
+                @endphp
+
+                <a href="{{ $href }}">{{ $item['label'] }}</a>
             </li>
         @endforeach
     </ul>

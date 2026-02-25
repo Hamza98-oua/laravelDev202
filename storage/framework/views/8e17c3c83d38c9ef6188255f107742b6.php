@@ -11,14 +11,38 @@
             <div class="logo">MegaShop</div>
             <nav>
     <ul>
-        <?php require_once app_path('data.php'); ?>
         <?php $__currentLoopData = $navigation; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-            <?php
-                // On adapte les URLs statiques (.html) vers les routes Laravel
-                $routeName = ($item['label'] == 'Accueil') ? 'home' : strtolower($item['label']);
-                // Note: Il faudra peut-être ajuster selon tes noms de routes dans web.php
-            ?>
-            <li><a href="<?php echo e(($item['label'] == 'Accueil') ? route('home') : '#'); ?>"><?php echo e($item['label']); ?></a></li>
+            <li>
+                
+                <?php
+                    $href = '#';
+                    if (!empty($item['url'])) {
+                        // page d'accueil
+                        if ($item['url'] === 'index.html') {
+                            $href = route('home');
+                        }
+                        // CGV
+                        elseif (strpos($item['url'], 'cgv') !== false) {
+                            $href = route('cgv');
+                        }
+                        // Contact
+                        elseif (strpos($item['url'], 'contact') !== false) {
+                            $href = route('contact');
+                        }
+                        // catégories (pages/<slug>.html) -> route('category', slug)
+                        elseif (preg_match('#pages/([a-z0-9-]+)\.html#i', $item['url'], $m)) {
+                            $slug = $m[1];
+                            $href = route('category', ['slug' => $slug]);
+                        }
+                        else {
+                            // fallback vers l'URL fournie
+                            $href = url($item['url']);
+                        }
+                    }
+                ?>
+
+                <a href="<?php echo e($href); ?>"><?php echo e($item['label']); ?></a>
+            </li>
         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
     </ul>
 </nav>
